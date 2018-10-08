@@ -13,6 +13,7 @@ function openPort() {
     var found = false;
     SerialPort.list(function (err, ports) {
         for (var i = 0; i < ports.length; i++) {
+            console.log(ports[i].comName);
             if (ports[i].comName == port.path) {
                 found = true;
                 break;

@@ -23,5 +23,5 @@ wss.on('connection', function (ws) {
 
 
 var rs232Listener = require("./modules/rs232Listener");
-rs232Listener.init('COM9', 9600, 8,'none',wss);
+rs232Listener.init('/dev/ttyUSB0', 9600, 8,'none',wss);
 
