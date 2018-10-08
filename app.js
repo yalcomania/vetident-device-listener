@@ -23,7 +23,9 @@ wss.on('connection', function (ws) {
 })
 
 
-var configObj = JSON.parse(fs.readFileSync('./serial-config.json', 'utf8'));
+var configObj = JSON.parse(fs.readFileSync(__dirname +'/serial-config.json', 'utf8'));
+console.log(configObj);
+
 
 var rs232WeighingListener = new (require("./modules/rs232Listener"))('weight',configObj.weighingPort, 9600, 8,'none',wss);
 var rs232RfIdListener = new (require("./modules/rs232Listener"))('rfId',configObj.rfIdPort, 9600, 8,'none',wss);
