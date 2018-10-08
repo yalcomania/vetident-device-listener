@@ -1,21 +1,31 @@
-var SerialPort = require("serialport");
-var colors = require('colors/safe');
-var WebSocketServer = require('ws').Server;
 
-var port;
-var PORT = "";
-var _wss;
-var _type = "";
+
+var serialPortListener= function(type, portName, baudRare, dataBits, parity, wss){
+
+    var SerialPort = require("serialport");
+    var colors = require('colors/safe');
+    var WebSocketServer = require('ws').Server;
+
+    var _serialPortDevice=null;
+    var PORT = portName;
+    var _wss=wss;
+    var _type = type;
+
+    init();
+
+
+
+
 
 function openPort() {
-    if (!port)
+    if (!_serialPortDevice)
         return;
 
     var found = false;
     SerialPort.list(function (err, ports) {
         for (var i = 0; i < ports.length; i++) {
             console.log(ports[i].comName);
-            if (ports[i].comName == port.path) {
+            if (ports[i].comName == _serialPortDevice.path) {
                 found = true;
                 break;
             }
@@ -26,11 +36,11 @@ function openPort() {
             console.log(colors.red('[Rs232 Listener] Cannot found the port : ' + PORT));
         }
         else {
-            port.removeAllListeners('open');
-            port.on('open', onOpen);
+            _serialPortDevice.removeAllListeners('open');
+            _serialPortDevice.on('open', onOpen);
 
-            if (port.portName != "")
-                port.open(function (err) {
+            if (_serialPortDevice.portName != "")
+            _serialPortDevice.open(function (err) {
                     if (err) {
                         setTimeout(openPort, 3000, 'reconnect');
                         var errMessage = err == null ? "Unknown" : err.message == null ? err : err.message;
@@ -45,23 +55,23 @@ function openPort() {
 function onOpen() {
     console.log(colors.green('[Rs232 Listener] Conection established on port:' + PORT));
 
-    port.removeAllListeners('close');
-    port.on('close', onClose);
+    _serialPortDevice.removeAllListeners('close');
+    _serialPortDevice.on('close', onClose);
 
-    port.removeAllListeners('error');
-    port.on('error', onError);
+    _serialPortDevice.removeAllListeners('error');
+    _serialPortDevice.on('error', onError);
 
-    port.removeAllListeners('data');
-    port.on('data', onData);
+    _serialPortDevice.removeAllListeners('data');
+    _serialPortDevice.on('data', onData);
 }
 
 function onClose() {
     console.log(colors.magenta('[Rs232 Listener] Connection closed from Port:' + PORT));
-    if (port) {
-        port.removeAllListeners('open');
-        port.removeAllListeners('close');
-        port.removeAllListeners('error');
-        port.removeAllListeners('data');
+    if (_serialPortDevice) {
+        _serialPortDevice.removeAllListeners('open');
+        _serialPortDevice.removeAllListeners('close');
+        _serialPortDevice.removeAllListeners('error');
+        _serialPortDevice.removeAllListeners('data');
     }
     setTimeout(openPort, 3000, 'reconnect');
 }
@@ -73,7 +83,8 @@ function onError(err) {
 
 function onData(data) {
     var strData = data.toString().replace('\r', '').replace('\n', '');
-    console.log('[Rs232 Listener] Data on PORT:' + PORT + ': ' + strData);
+    // console.log('[Rs232 Listener] Data on PORT:' + PORT + ': ' + strData);
+    // return;
     var webSocketPacket = {};
 
     if (_type == 'weight') {
@@ -110,23 +121,24 @@ function onData(data) {
 
 }
 
-exports.init = function (type, portName, baudRare, dataBits, parity, wss) {
-    PORT = portName;
-    _type = type;
-    port = new SerialPort(portName, {
+     function init () {
+    
+        _serialPortDevice = new SerialPort(PORT, {
         autoOpen: false,
-        baudRate: baudRare,
-        dataBits: dataBits,
-        parity: parity,
+        baudRate: 9600,//baudRare,
+        dataBits: 8,//dataBits,
+        parity: 'none'
     });
 
-    if (port == null)
+    if (_serialPortDevice == null)
         return;
 
     _wss = wss;
     openPort();
 }
+}
 
+module.exports = serialPortListener;
 
 
 

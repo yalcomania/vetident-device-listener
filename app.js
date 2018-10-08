@@ -25,10 +25,11 @@ wss.on('connection', function (ws) {
 
 var configObj = JSON.parse(fs.readFileSync('./serial-config.json', 'utf8'));
 
-var rs232WeighingListener = require("./modules/rs232Listener");
-var rs232RfIdListener = require("./modules/rs232Listener");
+var rs232WeighingListener = new (require("./modules/rs232Listener"))('weight',configObj.weighingPort, 9600, 8,'none',wss);
+var rs232RfIdListener = new (require("./modules/rs232Listener"))('rfId',configObj.rfIdPort, 9600, 8,'none',wss);
 
-// rs232Listener.init('/dev/ttyUSB0', 9600, 8,'none',wss);
-rs232WeighingListener.init('weight',configObj.weighingPort, 9600, 8,'none',wss);
-rs232RfIdListener.init('rfId',configObj.rfIdPort, 9600, 8,'none',wss);
+console.log(configObj.weighingPort,configObj.rfIdPort);
+
+// rs232WeighingListener.init('weight',configObj.weighingPort, 9600, 8,'none',wss);
+// rs232RfIdListener.init('rfId',configObj.rfIdPort, 9600, 8,'none',wss);
 

@@ -1,4 +1,4 @@
 {
-    "weighingPort":"COM3",
-    "rfIdPort":"COM4"
+    "weighingPort":"/dev/ttyUSB0",
+    "rfIdPort":"/dev/ttyUSB1"
 }
