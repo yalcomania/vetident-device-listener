@@ -5,6 +5,7 @@ var WebSocketServer = require('ws').Server;
 var port;
 var PORT = "";
 var _wss;
+var _type = "";
 
 function openPort() {
     if (!port)
@@ -71,24 +72,47 @@ function onError(err) {
 }
 
 function onData(data) {
-    var strData=data.toString().replace('\r','').replace('\n','');
+    var strData = data.toString().replace('\r', '').replace('\n', '');
     console.log('[Rs232 Listener] Data on PORT:' + PORT + ': ' + strData);
-    var webSocketPacket={type:'rfId',payload:{
-        rfId:strData
-    }};
+    var webSocketPacket = {};
 
-    webSocketPacketJsonString= JSON.stringify(webSocketPacket);
+    if (_type == 'weight') {
+        var pattern = /(\d+\.\d+) kg/g;
+        var match = pattern.exec(strData);
+        if (match) {
+            webSocketPacket = {
+                type: 'weight', payload: {
+                    weight: parseFloat(match[1]).toFixed(2)
+                }
+            };
+
+        }
+    }
+    else if(_type=='rfId'){
+        webSocketPacket = {
+            type: 'rfId', payload: {
+                rfId: strData
+            }
+        };
+    }
+
+    webSocketPacketJsonString = JSON.stringify(webSocketPacket);
 
     _wss.clients.forEach(function each(client) {
         if (client.readyState === 1) {
-          client.send(webSocketPacketJsonString);
+            client.send(webSocketPacketJsonString);
         }
-      });
+    });
+
+
+
+
 
 }
 
-exports.init = function (portName, baudRare, dataBits, parity, wss) {
+exports.init = function (type, portName, baudRare, dataBits, parity, wss) {
     PORT = portName;
+    _type = type;
     port = new SerialPort(portName, {
         autoOpen: false,
         baudRate: baudRare,

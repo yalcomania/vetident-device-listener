@@ -1,3 +1,4 @@
+var fs = require('fs');
 var colors = require('colors/safe');
 var WebSocketServer = require('ws').Server,
     wss = new WebSocketServer({ port: 40510 });
@@ -22,6 +23,12 @@ wss.on('connection', function (ws) {
 })
 
 
-var rs232Listener = require("./modules/rs232Listener");
-rs232Listener.init('/dev/ttyUSB0', 9600, 8,'none',wss);
+var configObj = JSON.parse(fs.readFileSync('./serial-config.json', 'utf8'));
+
+var rs232WeighingListener = require("./modules/rs232Listener");
+var rs232RfIdListener = require("./modules/rs232Listener");
+
+// rs232Listener.init('/dev/ttyUSB0', 9600, 8,'none',wss);
+rs232WeighingListener.init('weight',configObj.weighingPort, 9600, 8,'none',wss);
+rs232RfIdListener.init('rfId',configObj.rfIdPort, 9600, 8,'none',wss);
 
